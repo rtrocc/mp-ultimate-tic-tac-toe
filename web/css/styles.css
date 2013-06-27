@@ -21,3 +21,9 @@
     top:730px;
     left:10px;
 }
+
+#output {
+	top: 420px;
+	position: absolute;
+	left: 10px;
+}

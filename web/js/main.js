@@ -57,7 +57,7 @@ var Grid = function() {
             _grid[grid] = state;
 
             // Workout winning conditions
-            
+
         },
         get: function(grid) {
             return _grid[grid];
@@ -92,7 +92,7 @@ function Board(canvas, width, height) {
     }
 
     var drawGrid = function(x, y, width, height) {
-        canvas.beginPath();        
+        canvas.beginPath();
         line(x + width/3, y, x + width/3, y + height);
         line(x + width/3*2, y, x + width/3*2, y + height);
         line(x, y + height/3, x + width, y + height/3);
@@ -100,16 +100,16 @@ function Board(canvas, width, height) {
         canvas.stroke();
     };
 
-    function getCoordFromNum(num) {        
+    function getCoordFromNum(num) {
         return [num % 3, Math.floor(num/3)];
     }
 
-    var draw = function(cell) {       
-        canvas.clearRect(0,0,width,height); 
+    var draw = function(cell) {
+        canvas.clearRect(0,0,width,height);
         drawGrid(0, 0, width, height);
         var sWidth = width/3 - (padding*2);
         var sHeight = height/3 - (padding*2);
-        for (var i=0; i<=8; i++) { 
+        for (var i=0; i<=8; i++) {
             if (i == cell) {
                 canvas.strokeStyle = 'red';
             }
@@ -126,7 +126,9 @@ function Board(canvas, width, height) {
 };
 
 function Game(canvas, width, height, board) {
-    var player = 1;
+
+	var socket;
+	var player = 1;
     var grid = new Grid();
     grid.createEmpty();
     board.draw();
@@ -176,7 +178,7 @@ function Game(canvas, width, height, board) {
         var size = width/6/3 * (size || 1);
         var x = pos[0] - size/2;
         var y = pos[1] - size/2;
-        canvas.beginPath();  
+        canvas.beginPath();
         canvas.moveTo(x, y);
         canvas.lineTo(x + size, y + size);
         canvas.moveTo(x + size, y);
@@ -185,11 +187,11 @@ function Game(canvas, width, height, board) {
         canvas.lineWidth = 1;
     }
 
-    function drawMoveY(pos, size) {      
-        canvas.lineWidth = 2 * size || 1;  
-        var size = width/10/3 * (size || 1);        
+    function drawMoveY(pos, size) {
+        canvas.lineWidth = 2 * size || 1;
+        var size = width/10/3 * (size || 1);
         canvas.beginPath();
-        canvas.arc(pos[0], pos[1], size, 0, Math.PI*2, true); 
+        canvas.arc(pos[0], pos[1], size, 0, Math.PI*2, true);
         canvas.closePath();
         canvas.stroke();
         canvas.lineWidth = 1;
@@ -217,15 +219,17 @@ function Game(canvas, width, height, board) {
     var lastMove = null;
 
     var move = function(x, y) {
+		//console.log('debugging `socket`(in move method):',socket);
         var pos = posToGrid(x, y);
         if (!pos) return;
 
         var coord = coordToSimple(pos);
+		console.log('debugging `coord`(in move method):',coord);
         var spot = grid.get(coord[0]).get(coord[1]);
         if (spot.result() != 'u')  return;
 
-        if (lastMove && coord[0] != lastMove[1]) { return}
-        lastMove = coord;        
+        if (lastMove && coord[0] != lastMove[1]) { console.log('returning from move()'); return}
+        lastMove = coord;
 
         grid.get(coord[0]).set(coord[1], grid.blank(player ? 'x' : 'o'));
         var result = grid.get(coord[0]).result();
@@ -237,24 +241,122 @@ function Game(canvas, width, height, board) {
 
         player = !player;
     };
+
+	var setSocket = function(s){
+		socket = s;
+	}
+
     return {
-        move: move
+        move: move,
+		setSocket: setSocket
     };
 }
 
 $(function() {
-    var width = 720;
+
+	var width = 400;
     var height = width;
-    Ultic.gameCanvas = document.getElementById('gamearea').getContext('2d');
+
+	Ultic.gameCanvas = document.getElementById('gamearea').getContext('2d');
     Ultic.boardCanvas = document.getElementById('board').getContext('2d');
 
-    var board = new Board(Ultic.boardCanvas, width, height);   
+    var board = new Board(Ultic.boardCanvas, width, height);
+
     var game = new Game(Ultic.gameCanvas, width, height, board);
+
+	var socket = io.connect('http://localhost:8001');
+
+
+
+	 game.setSocket(socket);
+
+	 console.log('debugging socket:',socket);
+
+
+	/**
+	 * Socket events
+	 */
+
+
+
+	 socket.on('connect', function () {
+		 $('#output').append('<div>Connected to the room!</div><br>');
+		 console.log('debugging `this`:',this);
+	 });
+
+	 socket.on('userjoined', function (data) {
+
+
+		 if(typeof game.players == 'undefined'){
+			 game.players = {};
+		 }
+
+		 game.players[data.name] = '';
+
+		 $('#output').append('<div>'+data.name+' joined the room!</div><br>');
+	 });
+
+	 socket.on('userdisconnect', function (data) {
+		 $('#output').append('<div>'+data.name+' left the room!</div><br>')
+	 });
+
+	 socket.on('rendermove', function (data) {
+
+		 console.log('received a move! heres the data:');
+		 console.log(data);
+		 console.log('logging game in rendermove event:',game);
+
+console.log('logging game.players:',game.players);
+
+		 if(typeof game.players != 'undefined'){
+			 console.log('in here:',game.players.length);
+			 if(Object.keys(game.players).length){
+				 console.log('in herehere');
+				 if(game.lastMove == data.guestname){
+					 console.log('returning ...');
+					return;
+				 }else console.log('moving on');
+
+				 if(game.players[data.guestname] != 'o' && game.players[data.guestname] != 'x' ){
+					game.players[data.guestname] = 'o';
+					game.playerType = 'o';
+				 }
+			 }
+
+
+		 }else{
+			 game.players[data.guestname] = 'x';
+			 if(data.guestname == game.guestname){
+				 game.playerType = 'x';
+			 }else console.log('not setting playerType');
+		 }
+
+
+		 $('#title').html('You are player '+game.playertype)
+		 game.lastMove = data.guestname;
+		 game.move(data.x,data.y);
+	 });
+
+
+	 //join the mutual room
+	 var room = prompt('Room to join:');
+	 var guestname = 'Guest'+getRandomInt(1000,9999);
+	 game.guestname = guestname;
+	 socket.guestname = guestname;
+	 socket.emit('subscribe',{
+		 'room': room,
+		 'name': guestname
+	 });
 
     $('#gamearea').click(function(e) {
         var x = e.offsetX;
         var y = e.offsetY;
 
-        game.move(x, y);
+		socket.emit('onmove',{x:x,y:y,guestname:game.guestname});
+        //game.move(x, y);
     })
 });
+
+function getRandomInt (min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
