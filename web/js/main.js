@@ -254,7 +254,7 @@ function Game(canvas, width, height, board) {
 
 $(function() {
 
-	var width = 400;
+	var width = 500;
     var height = width;
 
 	Ultic.gameCanvas = document.getElementById('gamearea').getContext('2d');
@@ -278,8 +278,8 @@ $(function() {
 
 
 	socket.on('connect', function () {
-		$('#output').append('<div>Connected to the room!</div><br>');
-		console.log('debugging `this`:',this);
+		//$('#output').append('<div>Connected to the room!</div><br>');
+		//console.log('debugging `this`:',this);
 	});
 
 	socket.on('userjoined', function (data) {
@@ -291,7 +291,10 @@ $(function() {
 
 		game.players[data.name] = '';
 
-		$('#output').append('<div>'+data.name+' joined the room!</div><br>');
+		if(game.guestname !== data.name){
+			$('#output').append('<div>'+data.name+' joined the room!</div><br>');
+		}
+
 	});
 
 	socket.on('userdisconnect', function (data) {
@@ -302,43 +305,39 @@ $(function() {
 
 		console.log('received a move! heres the data:',data);
 		//console.log('logging game in rendermove event:',game);
-		console.log('logging game.players:',game.players);
-//return;
+		//console.log('logging game.players:',game.players);
 
 		if(game.firstMove){
-			console.log('FIRST MOVE',data.gameKeeper);
-			game.players[data.guestname] = 'x';
-			game.currentPlayer = 'o';
+			game.players[data.guestname] = 'X';
+			game.currentPlayer = 'O';
 
 			if(data.guestname != game.guestname){
-				game.players[game.guestname] = 'o';
+				game.players[game.guestname] = 'O';
 			}else{
 				for(i in game.players){
-					console.log('debugging i: ',i);
 					if(i != game.guestname){
-						game.players[i] = 'o';
+						game.players[i] = 'O';
 					}
 				}
-				//game.players[data.guestname] = 'o';
 			}
-//			if(data.guestname == game.guestname){
-//				game.playerType = 'x';
-//			}else console.log('not setting playerType');
 			game.firstMove = false;
 		}else{
 
 			if(game.lastMove == data.guestname){
-				console.log('not '+data.guestname+'\'s move!');
+				//console.log('not '+data.guestname+'\'s move!');
+				window.alert('not your goddamn turn, goddammit');
 				return;
 			}
-			game.currentPlayer = game.currentPlayer == 'o'?'x':'o';
+			game.currentPlayer = game.currentPlayer == 'O'?'X':'O';
 		}
 
-		$title = $('#title').html('You are player '+game.players[game.guestname]+'<br>Currently player ' +game.currentPlayer+'\'s turn.');
+		$status = $('#status').html('<span style="text-align:center;">You are player '+game.players[game.guestname]+'</span>');
 		if(game.currentPlayer == game.players[game.guestname]){
-			$title.css('background-color','lime');
+			$("#turn-notice").html('ITS YOUR TURN').css('background-color','lime');
 		}else{
-			$title.css('background-color','transparent');
+			//$title.css('background-color','transparent');
+			$('#turn-notice').html('OPPONENTS TURN').css('background-color','red');
+			//console.debug($('#turn-notice'));
 		}
 		game.lastMove = data.guestname;
 		game.move(data.x,data.y);
@@ -347,8 +346,8 @@ $(function() {
 
 
 	 //join the mutual room
-	 var room = '1'//prompt('Room to join:');
-	 var guestname = 'Guest'+getRandomInt(1000,9999);
+	 var room = '1';//prompt('Room to join:');
+	 var guestname = 'Guest'+getRandomInt(1000,9999);//prompt('What is your name?');
 	 game.guestname = guestname;
 	 game.firstMove = true;
 	 socket.guestname = guestname;

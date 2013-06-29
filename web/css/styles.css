@@ -1,32 +1,53 @@
 #canvasCont {
-    position: absolute;
+    /*position: absolute;*/
+	margin: auto;
+	width: 500px;
 }
 
 #board {
     z-index: 100;
     position:absolute;
-    left:0px;
-    top:50px;
+/*    left:0px;
+    top:25px;*/
 }
 
 #gamearea {
     z-index: 200;
     position:absolute;
-    left:0px;
-    top:50px;
+/*    left:0px;
+    top:25px;*/
 }
 
-
+#output-container {
+	width: 500px;
+	margin: 550px auto;
+}
 #output {
-	top: 510px;
-	position: absolute;
-	left: 10px;
+	
 }
 
 #title {
-	height:20px;
+	text-align: center;
+	font-weight: bold;
+	font-size: 20px;
+	margin: auto;
+	width: 500px;
 }
 
+#status {
+	height:15px;
+	text-align: center;
+	margin: auto;
+	width: 500px;
+}
+
+#turn-notice {
+	 font-size: 15px;
+	 height:15px;
+	 text-align:center;
+	 margin: auto;
+	width: 500px;
+}
 #github{
 	display: none;
 }

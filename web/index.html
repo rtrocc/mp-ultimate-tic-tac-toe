@@ -7,9 +7,11 @@
 <body>
 	<div id="container">
 		<div id="title">Ultimate Tic Tac Toe</div>
+		<div id="turn-notice"></div>
+		<div id="status"></div>
 		<div id="canvasCont">
-			<canvas id="gamearea" width="400" height="400"></canvas>
-			<canvas id="board" width="400" height="400"></canvas>
+			<canvas id="gamearea" width="500" height="500"></canvas>
+			<canvas id="board" width="500" height="500"></canvas>
 		</div>
 
 
@@ -17,7 +19,12 @@
 		<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
 		<script type="text/javascript" src='js/lib/socket.io.min.js'></script>
 		<script src="js/main.js"></script>
-		<div id="output"></div>
+		<div id="output-container">
+			<div id="output">
+				
+			</div>
+		</div>
+
 		<a id='github' href="https://github.com/wgcrouch/ultic">Github</a>
 	</div>
 
