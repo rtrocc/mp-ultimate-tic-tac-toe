@@ -266,11 +266,9 @@ $(function() {
 
 	var socket = io.connect('http://localhost:8001');
 
+	game.setSocket(socket);
 
-
-	 game.setSocket(socket);
-
-	 console.log('debugging socket:',socket);
+	console.log('debugging socket:',socket);
 
 
 	/**
@@ -279,69 +277,80 @@ $(function() {
 
 
 
-	 socket.on('connect', function () {
-		 $('#output').append('<div>Connected to the room!</div><br>');
-		 console.log('debugging `this`:',this);
-	 });
+	socket.on('connect', function () {
+		$('#output').append('<div>Connected to the room!</div><br>');
+		console.log('debugging `this`:',this);
+	});
 
-	 socket.on('userjoined', function (data) {
-
-
-		 if(typeof game.players == 'undefined'){
-			 game.players = {};
-		 }
-
-		 game.players[data.name] = '';
-
-		 $('#output').append('<div>'+data.name+' joined the room!</div><br>');
-	 });
-
-	 socket.on('userdisconnect', function (data) {
-		 $('#output').append('<div>'+data.name+' left the room!</div><br>')
-	 });
-
-	 socket.on('rendermove', function (data) {
-
-		 console.log('received a move! heres the data:');
-		 console.log(data);
-		 console.log('logging game in rendermove event:',game);
-
-console.log('logging game.players:',game.players);
-
-		 if(typeof game.players != 'undefined'){
-			 console.log('in here:',game.players.length);
-			 if(Object.keys(game.players).length){
-				 console.log('in herehere');
-				 if(game.lastMove == data.guestname){
-					 console.log('returning ...');
-					return;
-				 }else console.log('moving on');
-
-				 if(game.players[data.guestname] != 'o' && game.players[data.guestname] != 'x' ){
-					game.players[data.guestname] = 'o';
-					game.playerType = 'o';
-				 }
-			 }
+	socket.on('userjoined', function (data) {
 
 
-		 }else{
-			 game.players[data.guestname] = 'x';
-			 if(data.guestname == game.guestname){
-				 game.playerType = 'x';
-			 }else console.log('not setting playerType');
-		 }
+		if(typeof game.players == 'undefined'){
+			game.players = {};
+		}
 
+		game.players[data.name] = '';
 
-		 $('#title').html('You are player '+game.playertype)
-		 game.lastMove = data.guestname;
-		 game.move(data.x,data.y);
+		$('#output').append('<div>'+data.name+' joined the room!</div><br>');
+	});
+
+	socket.on('userdisconnect', function (data) {
+		$('#output').append('<div>'+data.name+' left the room!</div><br>')
+	});
+
+	socket.on('rendermove', function (data) {
+
+		console.log('received a move! heres the data:',data);
+		//console.log('logging game in rendermove event:',game);
+		console.log('logging game.players:',game.players);
+//return;
+
+		if(game.firstMove){
+			console.log('FIRST MOVE',data.gameKeeper);
+			game.players[data.guestname] = 'x';
+			game.currentPlayer = 'o';
+
+			if(data.guestname != game.guestname){
+				game.players[game.guestname] = 'o';
+			}else{
+				for(i in game.players){
+					console.log('debugging i: ',i);
+					if(i != game.guestname){
+						game.players[i] = 'o';
+					}
+				}
+				//game.players[data.guestname] = 'o';
+			}
+//			if(data.guestname == game.guestname){
+//				game.playerType = 'x';
+//			}else console.log('not setting playerType');
+			game.firstMove = false;
+		}else{
+
+			if(game.lastMove == data.guestname){
+				console.log('not '+data.guestname+'\'s move!');
+				return;
+			}
+			game.currentPlayer = game.currentPlayer == 'o'?'x':'o';
+		}
+
+		$title = $('#title').html('You are player '+game.players[game.guestname]+'<br>Currently player ' +game.currentPlayer+'\'s turn.');
+		if(game.currentPlayer == game.players[game.guestname]){
+			$title.css('background-color','lime');
+		}else{
+			$title.css('background-color','transparent');
+		}
+		game.lastMove = data.guestname;
+		game.move(data.x,data.y);
+
 	 });
 
 
 	 //join the mutual room
-	 var room = prompt('Room to join:');
+	 var room = '1'//prompt('Room to join:');
 	 var guestname = 'Guest'+getRandomInt(1000,9999);
 	 game.guestname = guestname;
+	 game.firstMove = true;
 	 socket.guestname = guestname;
 	 socket.emit('subscribe',{
 		 'room': room,

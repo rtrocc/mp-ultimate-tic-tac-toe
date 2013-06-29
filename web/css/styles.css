@@ -6,24 +6,27 @@
     z-index: 100;
     position:absolute;
     left:0px;
-    top:0px;
+    top:50px;
 }
 
 #gamearea {
     z-index: 200;
     position:absolute;
     left:0px;
-    top:0px;
+    top:50px;
 }
 
-#github {
-    position: absolute;
-    top:730px;
-    left:10px;
-}
 
 #output {
-	top: 420px;
+	top: 510px;
 	position: absolute;
 	left: 10px;
+}
+
+#title {
+	height:20px;
+}
+
+#github{
+	display: none;
 }
