@@ -324,8 +324,9 @@ $(function() {
 		}else{
 
 			if(game.lastMove == data.guestname){
-				//console.log('not '+data.guestname+'\'s move!');
-				window.alert('not your goddamn turn, goddammit');
+				if(data.guestname == game.guestname){
+                    window.alert('not your goddamn turn, goddammit');
+                }				
 				return;
 			}
 			game.currentPlayer = game.currentPlayer == 'O'?'X':'O';
