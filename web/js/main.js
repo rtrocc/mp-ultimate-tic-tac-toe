@@ -264,7 +264,7 @@ $(function() {
 
     var game = new Game(Ultic.gameCanvas, width, height, board);
 
-	var socket = io.connect('http://localhost:8001');
+	var socket = io.connect('http://ultimatettt.tk:8001');
 
 	game.setSocket(socket);
 
