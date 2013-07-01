@@ -252,6 +252,10 @@ function Game(canvas, width, height, board) {
     };
 }
 
+function getRandomInt (min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 $(function() {
 
 	var width = 500;
@@ -275,11 +279,8 @@ $(function() {
 	 * Socket events
 	 */
 
-
-
 	socket.on('connect', function () {
-		//$('#output').append('<div>Connected to the room!</div><br>');
-		//console.log('debugging `this`:',this);
+
 	});
 
 	socket.on('userjoined', function (data) {
@@ -291,18 +292,39 @@ $(function() {
 
 		game.players[data.name] = '';
 
-		if(game.guestname !== data.name){
-			$('#output').append('<div>'+data.name+' joined the room!</div><br>');
-		}
+
+        if($('#playerList option').length >=2 ){
+            return false;
+        }
+
+        updatePlayerList(data.playerList,game);
+
+		// if(game.guestname !== data.name){
+		// 	$('#output').append('<div>'+data.name+' joined the room!</div><br>');
+		// }
 
 	});
 
 	socket.on('userdisconnect', function (data) {
-		$('#output').append('<div>'+data.name+' left the room!</div><br>')
+        updatePlayerList(data.playerList,game);
+		// $('#output').append('<div>'+data.name+' left the room!</div><br>')
 	});
+
+    socket.on('error', function (data) {
+        switch(data.errorType){
+            case 'fullroom':
+                window.alert('Room is full!');
+                $(document.body).html('<h1>Too bad, so sad</h1>');
+            break;
+
+            default:
+            break;
+        }
+    });
 
 	socket.on('rendermove', function (data) {
 
+        
 		console.log('received a move! heres the data:',data);
 		//console.log('logging game in rendermove event:',game);
 		//console.log('logging game.players:',game.players);
@@ -362,10 +384,17 @@ $(function() {
         var y = e.offsetY;
 
 		socket.emit('onmove',{x:x,y:y,guestname:game.guestname});
-        //game.move(x, y);
     })
 });
 
-function getRandomInt (min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+function updatePlayerList(playerlist,game){
+    if(playerlist){
+        $('#playerList').html('');
+
+        for(i in playerlist){
+            console.log(playerlist[i],game.guestname);
+            var player = playerlist[i]==game.guestname ? '<option style="color:blue;">'+playerlist[i]+'</option>':'<option>'+playerlist[i]+'</option>';
+            $('#playerList').append(player);
+        }
+    }
 }
