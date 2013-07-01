@@ -1,3 +1,3 @@
 var appConfig = {
-	socketServerUrl: 'http://localhost:8001'
+	socketServerUrl: 'http://ultimatettt.tk:8001'
 }
