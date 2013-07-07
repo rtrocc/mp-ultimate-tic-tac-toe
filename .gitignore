@@ -2,3 +2,5 @@ server/node_modules
 node_modules
 *.pid
 web/js/config.js
+*.sublime-project
+*.sublime-workspace
